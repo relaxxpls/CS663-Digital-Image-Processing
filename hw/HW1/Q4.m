@@ -18,8 +18,8 @@ degrees = -45:45;
 bin = 10;
 
 d_n = length(degrees);
-QMI = zeros(d_n);
-JE = zeros(d_n);
+QMI = zeros(d_n, 1);
+JE = zeros(d_n, 1);
 
 for idx = 1:d_n
     deg = degrees(idx);
@@ -65,5 +65,12 @@ for idx = 1:d_n
     % thus we use xm + (xm == 0) 
 
     % JE = -1 * sum(ym .* log2(ym + (ym == 0)));
-    break
 end
+
+figure(1)
+plot(degrees, JE, '-b')
+exportgraphics(gcf, 'report/Rotation vs JE.png', 'Resolution', 300)
+
+figure(2)
+plot(degrees, QMI, '-g')
+exportgraphics(gcf, 'report/Rotation vs QMI.png', 'Resolution', 300)
