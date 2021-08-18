@@ -15,34 +15,45 @@ J3 = imrotate(J2, 28.5, 'crop');
 
 [m, n] = size(J1);
 degrees = -45:45;
+d_n = length(degrees);
 bin = 10;
 
-d_n = length(degrees);
 QMI = zeros(d_n, 1);
 JE = zeros(d_n, 1);
+NCC = zeros(d_n, 1);
 
 for idx = 1:d_n
     deg = degrees(idx);
-    
+
     J4 = imrotate(J3, deg, 'crop');
-
-    NCC = normxcorr2(J3, J4);
-
-    I1 = J4(:);
-    I2 = J1(:);
+    I1 = double(J4(:));
+    I2 = double(J1(:));
 
     % joint histogram of J1 & J4
     min1 = min(I1); max1 = max(I1);
     min2 = min(I2); max2 = max(I2);
-    N1 = 1 + (max1 - min1) / bin;
-    N2 = 1 + (max2 - min2) / bin;
+    N1 = 1 + uint8(max1 - min1) / bin;
+    N2 = 1 + uint8(max2 - min2) / bin;
+
+    % NCC = normxcorr2(J3, J4);
+    mean1 = mean(I1);
+    mean2 = mean(I2);
+    sum1 = 0.0;
+    sum2 = 0.0;
+    CC = 0.0; % cross correlation
 
     ht = zeros(N1, N2);
     for pos = 1:m*n
-        x1 = 1 + (I1(pos) - min1) / bin;
-        x2 = 1 + (I2(pos) - min2) / bin;
+        x1 = 1 + uint8(I1(pos) - min1) / bin;
+        x2 = 1 + uint8(I2(pos) - min2) / bin;
         ht(x1, x2) = ht(x1, x2) + 1;
+
+        % normalised cross correlation
+        CC = CC + (I1(pos) - mean1) * (I2(pos) - mean2);
+        sum1 = sum1 + (I1(pos) - mean1)^2;
+        sum2 = sum2 + (I2(pos) - mean2)^2;
     end
+    NCC(idx) = CC / sqrt(sum1 * sum2); % normalisation
 
     ht = ht / (m * n); % normalization
 
@@ -51,26 +62,27 @@ for idx = 1:d_n
 
     for r = 1:N1
         for c = 1:N2
-            % Joint entropy
+            % joint entropy
             if ht(r, c) > 0
                 JE(idx) = JE(idx) - ht(r, c) * log2(ht(r, c));
             end
 
             % quadratic mutual information
-            QMI(idx) = QMI(idx) + (ht(r, c) - ym(r) * xm(c)).^2;
+            QMI(idx) = QMI(idx) + (ht(r, c) - ym(r)*xm(c))^2;
         end
     end
-
-    % cause ym or xm can have 0s thus log is undefined
-    % thus we use xm + (xm == 0) 
-
-    % JE = -1 * sum(ym .* log2(ym + (ym == 0)));
 end
 
+DIR = 'report';
+
 figure(1)
-plot(degrees, JE, '-b')
-exportgraphics(gcf, 'report/Rotation vs JE.png', 'Resolution', 300)
+plot(degrees, NCC, '-g')
+exportgraphics(gcf, fullfile(DIR, 'Rotation vs NCC.png'), 'Resolution', 300)
 
 figure(2)
-plot(degrees, QMI, '-g')
-exportgraphics(gcf, 'report/Rotation vs QMI.png', 'Resolution', 300)
+plot(degrees, JE, '-b')
+exportgraphics(gcf, fullfile(DIR, 'Rotation vs JE.png', 'Resolution'), 300)
+
+figure(3)
+plot(degrees, QMI, '-r')
+exportgraphics(gcf, fullfile(DIR, 'Rotation vs QMI.png', 'Resolution'), 300)
