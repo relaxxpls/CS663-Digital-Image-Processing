@@ -21,7 +21,7 @@ for i = 1:n
     figure(1);
     imshow(im1);
     [x1(i), y1(i)] = ginput(1);
-    
+
     figure(2);
     imshow(im2);
     [x2(i), y2(i)] = ginput(1);
@@ -29,5 +29,5 @@ end
 
 %% Part b)
 
-tform = maketform('affine',[1 0 0; .5 1 0; 0 0 1]);
-J = imtransform(I,tform);
+tform = maketform('affine', [1 0 0; .5 1 0; 0 0 1]);
+J = imtransform(I, tform);

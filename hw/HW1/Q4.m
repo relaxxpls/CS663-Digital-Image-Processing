@@ -1,5 +1,5 @@
 clc; clear;
-%% 
+%%
 J1 = imread('T1.jpg');
 % imshow(J1)
 
@@ -26,6 +26,9 @@ for idx = 1:d_n
     deg = degrees(idx);
 
     J4 = imrotate(J3, deg, 'crop');
+
+    ht = JointHistogram(J4, J1, bin, true);
+
     I1 = double(J4(:));
     I2 = double(J1(:));
 
@@ -35,32 +38,24 @@ for idx = 1:d_n
     N1 = 1 + uint8(max1 - min1) / bin;
     N2 = 1 + uint8(max2 - min2) / bin;
 
-    % NCC = normxcorr2(J3, J4);
-    mean1 = mean(I1);
-    mean2 = mean(I2);
-    sum1 = 0.0;
-    sum2 = 0.0;
+    mean1 = mean(I1); mean2 = mean(I2);
+    sum1 = 0.0; sum2 = 0.0;
     CC = 0.0; % cross correlation
 
-    ht = zeros(N1, N2);
-    for pos = 1:m*n
-        x1 = 1 + uint8(I1(pos) - min1) / bin;
-        x2 = 1 + uint8(I2(pos) - min2) / bin;
-        ht(x1, x2) = ht(x1, x2) + 1;
-
+    for pos = 1:m * n
         % normalised cross correlation
         CC = CC + (I1(pos) - mean1) * (I2(pos) - mean2);
         sum1 = sum1 + (I1(pos) - mean1)^2;
         sum2 = sum2 + (I2(pos) - mean2)^2;
     end
-    NCC(idx) = CC / sqrt(sum1 * sum2); % normalisation
 
-    ht = ht / (m * n); % normalization
+    NCC(idx) = CC / sqrt(sum1 * sum2); % normalisation
 
     xm = sum(ht, 2); xm = xm(:);
     ym = sum(ht, 1); ym = ym(:);
 
     for r = 1:N1
+
         for c = 1:N2
             % joint entropy
             if ht(r, c) > 0
@@ -68,21 +63,32 @@ for idx = 1:d_n
             end
 
             % quadratic mutual information
-            QMI(idx) = QMI(idx) + (ht(r, c) - ym(r)*xm(c))^2;
+            QMI(idx) = QMI(idx) + (ht(r, c) - ym(r) * xm(c))^2;
         end
+
     end
+
 end
 
 DIR = 'report';
 
-figure(1)
-plot(degrees, NCC, '-g')
-exportgraphics(gcf, fullfile(DIR, 'Rotation vs NCC.png'), 'Resolution', 300)
+figure(1);
+plot(degrees, NCC, '-g');
+% exportgraphics(gcf, fullfile(DIR, 'Rotation vs NCC.png'), 'Resolution', 300);
 
-figure(2)
-plot(degrees, JE, '-b')
-exportgraphics(gcf, fullfile(DIR, 'Rotation vs JE.png', 'Resolution'), 300)
+figure(2);
+plot(degrees, JE, '-b');
+% exportgraphics(gcf, fullfile(DIR, 'Rotation vs JE.png'), 'Resolution'), 300);
 
-figure(3)
-plot(degrees, QMI, '-r')
-exportgraphics(gcf, fullfile(DIR, 'Rotation vs QMI.png', 'Resolution'), 300)
+figure(3);
+plot(degrees, QMI, '-r');
+% exportgraphics(gcf, fullfile(DIR, 'Rotation vs QMI.png'), 'Resolution'), 300);
+
+optimal_deg = degrees(JE == min(JE));
+J4 = imrotate(J3, optimal_deg, 'crop');
+ht = JointHistogram(J1, J4, bin, true);
+
+figure(4);
+imagesc(ht);
+colorbar;
+exportgraphics(gcf, fullfile(DIR, 'Optimal rotation histogram.png'), 'Resolution', 300);
