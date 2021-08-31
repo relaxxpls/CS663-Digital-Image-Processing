@@ -1,32 +1,49 @@
-function outputImage = myBilateralFilter(inputImage, sigma_s, sigma_r, w = 5)
+function outImage = mybilateralfilter(inImage, sigma_s, sigma_r, w)
+    %*********************************************************************
+    %
+    % ? mybilateralfilter: Performs bilateral filtering on the input image
+    %
     % ? Input:
-    % * inputImage: the input image
-    % * sigma_s: the spatial standard deviation
-    % * sigma_r: the range standard deviation
-    % * w: the window size
-
+    % * inImage:    Input image.
+    % * sigma_s:    Gaussian spatial sigma.
+    % * sigma_r:    Gaussian range sigma.
+    % * w:          Window size.
+    %
     % ? Output:
-    % * outputImage: The filtered image.
+    % * outImage: Filtered image.
+    %
+    %*********************************************************************
 
-    [row, col] = size(inputImage);
-    outputImage = zeros(row, col);
+    [m, n] = size(inImage);
 
-    gaus = exp(-(X.^2 + Y.^2) / (2 * sigma_s^2));
+    % ? zero padding inImage to avoid boundary overflow problem
+    inImage = padarray(inImage, [w, w]);
+    inImage = double(inImage);
 
-    for i = 1:row
+    outImage = zeros(size(inImage));
 
-        for j = 1:col
-            % get the window (handle the overflow)
-            window = inputImage(max(i - w, 1):min(i + w, row), max(j - w):min(j + w, col));
+    [x, y] = meshgrid(-w:w, -w:w);
 
-            scaledWindow = (exp(-1 * (window - inputImage(i, j)).^2 / (2 * sigma_r^2))) .* gaus((max(i - w, 1):min(i + w, row)) - i + w + 1, (max(j - w, 1):min(j + w, col)) - j + w + 1);
+    % ? gaussian filter based on distance to the center pixel (sigma_s)
+    wd = exp(-(x.^2 + y.^2) / (2 * sigma_s^2));
 
-            outputImage(i, j) = sum(scaledWindow(:) .* window(:)) / sum(scaledWindow(:));
+    for i = w + 1:w + m
 
-            % [X, Y] = meshgrid(-windowSize:windowSize, -windowSize:windowSize);
-            % outputImage(i, j) = exp(-1 * (inputImage(i, j) - inputImage(window)).^2 / (2 * sigma_r^2)) * exp(-1 * (window - inputImage(i, j)).^2 / (2 * sigma_s^2)) / weight;
+        for j = w + 1:w + n
+            % ? gaussian filter based on range of surrounding pixels (sigma_r)
+            wr = exp(-((inImage(i - w:i + w, j - w:j + w) - inImage(i, j)).^2) / (2 * sigma_r^2));
+
+            % ? net weight
+            wb = wd .* wr;
+
+            % ? weighted average
+            s = inImage(i - w:i + w, j - w:j + w) .* wb;
+            outImage(i, j) = sum(s(:)) / sum(wb(:));
         end
 
     end
+
+    % ? remove zero padding
+    outImage = uint8(outImage(w + 1:w + m, w + 1:w + n));
 
 end
