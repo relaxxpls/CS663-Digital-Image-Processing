@@ -44,6 +44,6 @@ function outImage = mybilateralfilter(inImage, sigma_s, sigma_r, w)
     end
 
     % ? remove zero padding
-    outImage = uint8(outImage(w + 1:w + m, w + 1:w + n));
-
+    outImage = outImage(w + 1:w + m, w + 1:w + n);
+    outImage = uint8(outImage);
 end
