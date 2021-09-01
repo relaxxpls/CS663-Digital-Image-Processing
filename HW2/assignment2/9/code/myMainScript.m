@@ -32,8 +32,8 @@ for i = 1:4
     title(sprintf('LC2 - Local histogram equalization (%d x %d)', windowSize(i), windowSize(i)));
 
     % ? save plot
-    fileName = sprintf('LocalHistogramEquilization_%dx%d.png', windowSize(i), windowSize(i));
-    exportgraphics(gcf, fullfile(DIR, fileName), 'Resolution', 300);
+    % fileName = sprintf('LocalHistogramEquilization_%dx%d.png', windowSize(i), windowSize(i));
+    % exportgraphics(gcf, fullfile(DIR, fileName), 'Resolution', 300);
 end
 
 %% Global histogram equalization
@@ -54,8 +54,8 @@ subplot(2, 2, 4), imshow(LC2_global_eq);
 title('LC2 - Global histogram equalization');
 
 % ? save plot
-fileName = 'GlobalHistogramEquilization.png';
-exportgraphics(gcf, fullfile(DIR, fileName), 'Resolution', 300);
+% fileName = 'GlobalHistogramEquilization.png';
+% exportgraphics(gcf, fullfile(DIR, fileName), 'Resolution', 300);
 
 toc;
 % pause;
