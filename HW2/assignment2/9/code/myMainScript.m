@@ -13,32 +13,29 @@ LC2 = imread('../data/LC2.jpg');
 
 %% Local histogram equalization
 
-% windowSize = [7, 7; 31, 31; 51, 51; 71, 71];
 windowSize = [7, 31, 51, 71];
 
-for i = 1:size(windowSize, 1)
+for i = 1:4
     figure;
-    subplot(1, 2, 1), imshow(LC1);
-    title('Original image LC1');
+    subplot(2, 2, 1), imshow(LC1);
+    title('LC1 - original');
 
     LC1_eq = myHistogramEquilization(LC1, windowSize(i));
-    subplot(1, 2, 2), imshow(LC1_eq);
-    title(sprintf('Local histogram equalization with window size %d', windowSize(i)));
+    subplot(2, 2, 2), imshow(LC1_eq);
+    title(sprintf('LC1 - Local histogram equalization (%d x %d)', windowSize(i), windowSize(i)));
 
-    figure;
-    subplot(1, 2, 1), imshow(LC2);
-    title('Original image LC2');
+    subplot(2, 2, 3), imshow(LC2);
+    title('LC2 - original');
 
     LC2_eq = myHistogramEquilization(LC2, windowSize(i));
-    subplot(1, 2, 2), imshow(LC2_eq);
-    title(sprintf('Local histogram equalization with window size %d', windowSize(i)));
+    subplot(2, 2, 4), imshow(LC2_eq);
+    title(sprintf('LC2 - Local histogram equalization (%d x %d)', windowSize(i), windowSize(i)));
 
-    % save plot
-    fileName = sprintf('bilateral_%d.png', noise_sigma(i));
-    saveas(gcf, sprintf('../plots/myHistogramEqualization_%d.png', windowSize(i)));
+    % ? save plot
+    fileName = sprintf('LocalHistogramEquilization_%dx%d.png', windowSize(i), windowSize(i));
     exportgraphics(gcf, fullfile(DIR, fileName), 'Resolution', 300);
 end
 
 toc;
 % pause;
-% close all;
+close all;
