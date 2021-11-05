@@ -34,8 +34,8 @@ function segmented_img = myMeanShiftSegmentation(img, hs, hr)
             D = 0; % Denominator
             s = size(Q);
 
-            for i = 1:s(1)
-                q = Q(i, :);
+            for j = 1:s(1)
+                q = Q(j, :);
                 x = [q(1), q(2)];
                 ys = [y1(1), y1(2)];
 
