@@ -7,17 +7,20 @@ clc; clear;
 
 % ? resulting images path
 DIR = '../images';
+sigma = 20;
 
 barbara = imread('../data/barbara256.png');
 stream = imread('../data/stream.png');
 stream = stream(1:256, 1:256);
 
-noisy_stream = double(stream) + 20 * randn(size(stream));
-noisy_stream = uint8(noisy_stream);
+noisy_stream = double(stream) + sigma * randn(size(stream));
+figure, imshow(noisy_stream);
 
-imshow(noisy_stream);
-denoised_stream = myPCADenoising1(noisy_stream, 20);
-imshow(denoised_stream);
+denoised_stream = myPCADenoising1(noisy_stream, sigma);
+figure, imshow(denoised_stream);
+
+RMSE = sqrt(mean((noisy_stream(:) - denoised_stream(:)).^2));
+disp(RMSE);
 
 % % ? noise level
 % noise_sigma = [5, 10];
@@ -76,5 +79,5 @@ imshow(denoised_stream);
 % end
 
 toc;
-pause;
-close all;
+% pause;
+% close all;
