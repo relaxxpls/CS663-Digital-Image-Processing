@@ -1,39 +1,62 @@
-function [segmented_img] = myMeanShiftSegmentation(img, h_spatial, h_intensity, num_neighbours, max_iter)
+function segmented_img = myMeanShiftSegmentation(img, hs, hr)
 
-    img = im2double(img);
+    % create feature vectors
+    Q = []; % list of feature vectors
+    [h, w] = size(img);
+
+    for i = 1:h
+
+        for j = 1:w
+            q = [i, j, img(i, j)];
+            Q = [Q; q];
+        end
+
+    end
+
+    Q = single(Q);
+
+    %     hs = 2;
+    %     hr = 2;
+
+    s = size(Q);
+
     segmented_img = img;
 
-    [rows, columns] = size(img);
-    features = zeros(rows * columns, 3);
+    for i = 1:s(1)
+        y0 = Q(i, :);
+        shift = 999;
+        y1 = y0;
 
-    for i = 1:rows
+        while shift > 1
 
-        for j = 1:columns
-            features((i - 1) * columns + j, :) = [i / h_spatial, j / h_spatial, img(i, j) / h_intensity];
+            n = 3; % neighborhood
+            N = 0; % numerator
+            D = 0; % Denominator
+            s = size(Q);
+
+            for i = 1:s(1)
+                q = Q(i, :);
+                x = [q(1), q(2)];
+                ys = [y1(1), y1(2)];
+
+                if norm(x - ys) <= n
+                    I = double(q(3));
+                    yI = double(y1(3));
+                    N = N + q * exp(-norm(x - ys)^2 / (2 * hs^2)) * exp(-norm(I - yI)^2 / (2 * hr^2));
+                    D = D + exp(-norm(x - ys)^2 / (2 * hs^2)) * exp(-norm(I - yI)^2 / (2 * hr^2));
+                end
+
+            end
+
+            y2 = N / D;
+
+            % shift = norm(y2 - y1);
+            shift = shift - 10;
+            y1 = y2;
+            %         disp('yey')
         end
 
-    end
-
-    for num_iter = 1:max_iter
-
-        [nearest_neigh, distances] = knnsearch(features, features, 'k', num_neighbours);
-        temp_features = features;
-
-        for i = 1:rows * columns
-            weights = exp(-(distances(i, :).^2) / 2);
-            sum_weights = sum(weights);
-            weights = weights';
-            features(i, 3) = sum(weights .* temp_features(nearest_neigh(i, :), 3)) / sum_weights;
-        end
-
-    end
-
-    for i = 1:rows
-
-        for j = 1:columns
-            segmented_img(i, j) = features((i - 1) * columns + j, 3);
-        end
-
+        segmented_img(y0(1), y0(2)) = y2(3);
     end
 
 end
