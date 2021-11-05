@@ -1,40 +1,48 @@
-function outImage = myPCADenoising1(inImage, sigma)
+function outImage = myPCADenoising2(inImage, sigma)
     [m, n] = size(inImage);
     outImage = double(zeros(m, n));
+    outMask = double(zeros(m, n));
 
     % ? Patch size
+    knn = 200;
     p = 7;
-    N = (m + 1 - p) * (n + 1 - p);
-    P = zeros(p * p, N);
+    neighbour = 31;
+    N = (neighbour + 1 - p) * (neighbour + 1 - p);
 
-    for i = 1:m + 1 - p
+    for i = 1:m +1 - neighbour
 
-        for j = 1:n + 1 - p
-            patch = inImage(i:i + p - 1, j:j + p - 1);
-            P(:, (i - 1) * (n + 1 - p) + j) = patch(:);
+        for j = 1:n +1 - neighbour
+            subImage = inImage(i:i - 1 + neighbour, j:j - 1 + neighbour);
+            P = zeros(p * p, N);
+
+            for ii = 1:neighbour + 1 - p
+
+                for jj = 1:neighbour + 1 - p
+                    patch = subImage(ii:ii - 1 + p, jj:jj - 1 + p);
+                    P(:, (ii - 1) * (neighbour + 1 - p) + jj) = patch(:);
+                end
+
+            end
+
+            [IDX, D] = knnsearch(P', P(:, 1)', 'K', knn);
+            Qi = P(:, IDX);
+            Qit = Qi * Qi';
+            [W, T] = eig(Qit);
+
+            alpha_ij = W' * Qi;
+            alpha_j = max(0, sum(alpha_ij.^2, 2) / N - sigma^2);
+
+            alphaDenoised = alpha_ij ./ (1 + (sigma * sigma) ./ kron(alpha_j, ones(1, knn)));
+            denoisedPatches = W * alphaDenoised;
+
+            outImage(i:i + p - 1, j:j + p - 1) = outImage(i:i + p - 1, j:j + p - 1) + reshape(denoisedPatches(:, 1), p, p);
+            outMask(i:i + p - 1, j:j + p - 1) = outMask(i:i + p - 1, j:j + p - 1) + 1;
         end
 
     end
 
-    Pt = P * P';
-    [V, D] = eig(Pt);
-    alpha_ij = V' * P;
-    alpha_j = max(0, sum(alpha_ij.^2, 2) / N - sigma^2);
-    alphaDenoised = alpha_ij ./ (1 + (sigma * sigma) ./ kron(alpha_j, ones(1, N)));
+    outImage = outImage ./ outMask;
 
-    denoisedPatches = V * alphaDenoised;
-
-    factor = double(zeros(m, n));
-
-    for i = 1:m + 1 - p
-
-        for j = 1:n + 1 - p
-            outImage(i:i + p - 1, j:j + p - 1) = outImage(i:i + p - 1, j:j + p - 1) + reshape(denoisedPatches(:, (n + 1 - p) * (i - 1) + j), p, p);
-            factor(i:i + p - 1, j:j + p - 1) = factor(i:i + p - 1, j:j + p - 1) + 1;
-        end
-
-    end
-
-    outImage = outImage ./ factor;
+    outImage = outImage(1:m + 1 - neighbour, 1:n + 1 - neighbour);
     outImage = uint8(outImage);
 end

@@ -17,24 +17,24 @@ function outImage = myPCADenoising1(inImage, sigma)
     end
 
     Pt = P * P';
-    [V, D] = eig(Pt);
-    alpha_ij = V' * P;
+    [W, T] = eig(Pt);
+    alpha_ij = W' * P;
     alpha_j = max(0, sum(alpha_ij.^2, 2) / N - sigma^2);
     alphaDenoised = alpha_ij ./ (1 + (sigma * sigma) ./ kron(alpha_j, ones(1, N)));
 
-    denoisedPatches = V * alphaDenoised;
+    denoisedPatches = W * alphaDenoised;
 
-    factor = double(zeros(m, n));
+    outMask = double(zeros(m, n));
 
     for i = 1:m + 1 - p
 
         for j = 1:n + 1 - p
             outImage(i:i + p - 1, j:j + p - 1) = outImage(i:i + p - 1, j:j + p - 1) + reshape(denoisedPatches(:, (n + 1 - p) * (i - 1) + j), p, p);
-            factor(i:i + p - 1, j:j + p - 1) = factor(i:i + p - 1, j:j + p - 1) + 1;
+            outMask(i:i + p - 1, j:j + p - 1) = outMask(i:i + p - 1, j:j + p - 1) + 1;
         end
 
     end
 
-    outImage = outImage ./ factor;
+    outImage = outImage ./ outMask;
     outImage = uint8(outImage);
 end

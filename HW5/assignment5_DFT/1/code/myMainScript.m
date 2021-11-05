@@ -7,77 +7,32 @@ clc; clear;
 
 % ? resulting images path
 DIR = '../images';
+
+% ? Neighbours
+N = 200;
+
+% ? noise level
 sigma = 20;
 
 barbara = imread('../data/barbara256.png');
 stream = imread('../data/stream.png');
 stream = stream(1:256, 1:256);
 
+%% Part A)
 noisy_stream = double(stream) + sigma * randn(size(stream));
 figure, imshow(noisy_stream);
 
-denoised_stream = myPCADenoising1(noisy_stream, sigma);
-figure, imshow(denoised_stream);
+denoised_stream1 = myPCADenoising1(noisy_stream, sigma);
+figure, imshow(denoised_stream1);
 
-RMSE = sqrt(mean((noisy_stream(:) - denoised_stream(:)).^2));
-disp(RMSE);
+RMSE1 = sqrt(mean((noisy_stream(:) - denoised_stream1(:)).^2));
+disp(RMSE1);
 
-% % ? noise level
-% noise_sigma = [5, 10];
+%% Part B)
+denoised_stream2 = myPCADenoising2(noisy_stream, sigma);
+figure, imshow(denoised_stream2);
 
-% % ? Neighbours
-% N = 200;
-
-% % ? Spatial domain sigma
-% sigma_s = [2, 0.1, 3];
-
-% % ? Range domain sigma
-% sigma_r = [2, 0.1, 15];
-
-% for i = 1:length(noise_sigma)
-%     % * Barbara
-
-%     % ? Add Gaussian noise
-%     noisy_barbara = double(barbara) + noise_sigma(i) * randn(size(barbara));
-%     noisy_barbara = uint8(noisy_barbara);
-
-%     figure;
-%     subplot(2, 2, 1), imshow(noisy_barbara);
-%     title(sprintf('Noisy barbara (\\sigma = %d)', noise_sigma(i)));
-
-%     % ? Denoise using meanshift filtering
-%     for j = 1:length(sigma_s)
-%         filtered_barbara = myMeanShiftSegmentation(noisy_barbara, sigma_s(j), sigma_r(j));
-
-%         subplot(2, 2, 1 + j), imshow(filtered_barbara);
-%         title(sprintf('Filtered barbara (\\sigma_s: %.2f, \\sigma_r: %.2f)', sigma_s(j), sigma_r(j)));
-%     end
-
-%     fileName = sprintf('barbara_meanshift_%d.png', noise_sigma(i));
-%     exportgraphics(gcf, fullfile(DIR, fileName), 'Resolution', 300);
-
-%     % * Kodak
-
-%     % ? Add Gaussian noise
-%     noisy_kodak = double(kodak) + noise_sigma(i) * randn(size(kodak));
-%     noisy_kodak = uint8(noisy_kodak);
-
-%     figure;
-%     subplot(2, 2, 1), imshow(noisy_kodak);
-%     title(sprintf('Noisy kodak (\\sigma: %d)', noise_sigma(i)));
-
-%     % ? Denoise using meanshift filtering
-%     for j = 1:length(sigma_s)
-%         filtered_kodak = myMeanShiftSegmentation(noisy_kodak, sigma_s(j), sigma_r(j));
-
-%         subplot(2, 2, 1 + j), imshow(filtered_kodak);
-%         title(sprintf('Filtered kodak (\\sigma_s: %.2f, \\sigma_r: %.2f)', sigma_s(j), sigma_r(j)));
-%     end
-
-%     fileName = sprintf('kodak_meanshift_%d.png', noise_sigma(i));
-%     exportgraphics(gcf, fullfile(DIR, fileName), 'Resolution', 300);
-% end
+RMSE2 = sqrt(mean((noisy_stream(:) - denoised_stream2(:)).^2));
+disp(RMSE2);
 
 toc;
-% pause;
-% close all;
