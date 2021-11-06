@@ -42,7 +42,5 @@ function outImage = myPCADenoising2(inImage, sigma)
     end
 
     outImage = outImage ./ outMask;
-
-    outImage = outImage(1:m + 1 - neighbour, 1:n + 1 - neighbour);
     outImage = uint8(outImage);
 end
